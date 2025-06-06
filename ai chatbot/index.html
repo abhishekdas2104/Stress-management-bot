@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stress Management Chatbot - Your Mental Wellness Assistant</title>
+  <!-- Tailwind CSS via jsDelivr -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Google Fonts (Poppins) -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome via jsDelivr -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css"/>
+  <style>
+    html,body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to bottom right, #f0f4ff 0%, #e6e0ff 100%);
+      color: #1f2937;
+      min-height: 100vh;
+      width: 100vw;
+    }
+    body {
+      overflow-x: hidden;
+      background-attachment: fixed;
+      background-size: cover;
+    }
+    /* Hide scrollbars for optimal PDF rendering */
+    ::-webkit-scrollbar { width: 0 !important; background: transparent !important;}
+    body { scrollbar-width: none; -ms-overflow-style: none; }
+    .animated-box {
+      animation: fadeInUp 0.7s cubic-bezier(.4,0,.2,1);
+      transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s;
+      will-change: transform, box-shadow;
+    }
+    .animated-box:hover {
+      transform: translateY(-6px) scale(1.025);
+      box-shadow: 0 12px 35px 0 rgba(79,70,229,0.20);
+      z-index: 5;
+    }
+    @keyframes fadeInUp {
+      0% { opacity:0; transform: translateY(30px);}
+      100% { opacity:1; transform: none;}
+    }
+    .backdrop {
+      background: linear-gradient(120deg, rgba(236,246,255,0.9) 0%, rgba(230,232,255,0.98) 100%);
+      min-height: 100vh;
+      min-width: 100vw;
+      position: fixed;
+      z-index: -1;
+      top: 0; left: 0; right: 0; bottom: 0;
+    }
+    .glass {
+      background: rgba(255,255,255,0.65);
+      backdrop-filter: blur(8px) saturate(1.25);
+      box-shadow: 0 6px 32px 0 rgba(79,70,229,0.10);
+    }
+    /* Chatbot FAB animation */
+    .chatbot-fab {
+      box-shadow: 0 6px 24px 0 rgba(79,70,229,0.23);
+      transition: transform 0.3s cubic-bezier(.4,0,.2,1), background 0.3s, color 0.3s;
+    }
+    .chatbot-fab:hover {
+      transform: scale(1.1) rotate(-6deg);
+      background: linear-gradient(90deg,#8b5cf6, #6366f1);
+      color: #fff !important;
+    }
+    .chatbot-container {
+      display: none;
+      position: fixed;
+      bottom: 92px;
+      right: 40px;
+      z-index: 70;
+      background: #f9fafb;
+      box-shadow: 0 12px 38px 4px rgba(79,70,229,0.18);
+      border-radius: 1.6rem;
+      transition: all 0.5s cubic-bezier(.47,1.64,.41,.8);
+      max-width: 420px;
+      width: 95vw;
+      height: 540px;
+      overflow: hidden;
+      border: 2.5px solid #8b5cf6;
+    }
+    .chatbot-container.open { display: block; animation: chatbot-appear 0.6s cubic-bezier(.68,-0.6,.32,1.6);}
+    @keyframes chatbot-appear { from{ opacity: 0; transform: translateY(60px) scale(0.8);} to{ opacity:1; transform: none;} }
+    .no-resize { resize: none;}
+    @media (min-width: 1024px) {
+      .max-laptop-w { max-width: 1100px;}
+      .chatbot-container { min-width: 410px; min-height: 540px; width: 435px;}
+    }
+    /* Chat message bubbles */
+    .remove-scroll::-webkit-scrollbar { display:none;}
+    .remove-scroll { -ms-overflow-style:none; scrollbar-width:none;}
+    /* Typing dots animation */
+    .typing-dots .dot {
+      display: inline-block;
+      font-weight: bold;
+      font-size: 1.25em;
+      animation: blink 1.3s infinite both;
+    }
+    .typing-dots .dot:nth-child(2){ animation-delay: .2s; }
+    .typing-dots .dot:nth-child(3){ animation-delay: .4s; }
+    @keyframes blink {
+      0%,100%{ opacity: .3;}
+      20%{ opacity: 1;}
+      40%{ opacity: .3;}
+    }
+    /* For avatars in footer */
+    .dev-avatar:hover {
+      outline: 3px solid #c4b5fd;
+      box-shadow: 0 4px 15px 1px #ddd6fe90;
+      transform: scale(1.08) rotate(-2deg);
+      z-index:2;
+    }
+    /* PDF optimization: avoid any print-specific page break handling */
+    @media print {
+      html, body { background: #fff !important; color: #111 !important; -webkit-print-color-adjust: exact;}
+      .chatbot-fab, .chatbot-container { display:none !important;}
+    }
+    /* Gallery styling */
+    .stress-relief-gallery img {
+      object-fit: cover;
+      width: 100%;
+      height: 210px;
+      display: block;
+      border-radius: 1rem;
+      box-shadow: 0 6px 20px 0 rgba(0,0,0,0.08);
+      transition: transform 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s;
+    }
+    .stress-relief-gallery img:hover {
+      transform: scale(1.03) translateY(-2px);
+      box-shadow: 0 10px 24px 0 rgba(79,70,229,0.18);
+      z-index: 3;
+    }
+    .featured-techniques img {
+      object-fit: cover;
+      width: 116px;
+      height: 116px;
+      display: block;
+      border-radius: 100px;
+      box-shadow: 0 4px 13px 0 rgba(79,70,229,0.11);
+      border: 4px solid #ddd6fe;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="backdrop"></div>
+  <main class="w-full min-h-screen flex flex-col items-center justify-start">
+    <!-- HEADER -->
+    <header class="w-full max-laptop-w mx-auto py-8 flex flex-col items-center text-center">
+      <div class="flex items-center gap-3 justify-center mb-3 animate-bounce">
+        <i class="fas fa-brain text-purple-400 text-4xl shadow drop-shadow-xl"></i>
+        <h1 class="text-3xl lg:text-4xl font-extrabold tracking-wide bg-gradient-to-r from-indigo-600 via-purple-500 to-blue-400 bg-clip-text text-transparent">Stress Management Assistant</h1>
+      </div>
+      <p class="text-lg lg:text-xl text-gray-700 mb-2 font-medium transition-opacity duration-700">Welcome to Your Mental Wellness Companion!</p>
+      <p class="text-md text-indigo-600 font-semibold tracking-wide">🌿 Let's work together for a calmer, more balanced life!</p>
+    </header>
+
+    <!-- STRESS RELIEF GALLERY -->
+    <section class="w-full max-laptop-w mx-auto px-2 mb-8">
+      <h2 class="text-2xl font-bold text-purple-700 mb-4 mt-2 flex items-center gap-2">
+        <i class="fas fa-images text-indigo-400 text-xl"></i>Stress Relief Gallery
+      </h2>
+      <div class="stress-relief-gallery grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div>
+          <img src="https://health.ucdavis.edu/media-resources/contenthub/post/internet/cultivating-health/2022/12/images-body/meditation-benefits.jpg" alt="Person meditating" title="© UC Davis Health, Meditation Benefits">
+          <div class="text-sm text-center text-indigo-900 mt-1">Mindful Meditation</div>
+        </div>
+        <div>
+          <img src="https://media.post.rvohealth.io/wp-content/uploads/2020/08/man-meditation-yoga-mat-laptop-1200x628-facebook-1200x628.jpg" alt="Man meditating" title="© Healthline, Meditation Benefits">
+          <div class="text-sm text-center text-indigo-900 mt-1">Home Meditation</div>
+        </div>
+        <div>
+          <img src="https://media.self.com/photos/62ec18605725f61f848ebf7c/4:3/w_2560%2Cc_limit/deep-breathing-exercises.jpg" alt="Deep breathing exercise" title="© SELF, Deep Breathing Exercises">
+          <div class="text-sm text-center text-indigo-900 mt-1">Deep Breathing</div>
+        </div>
+        <div>
+          <img src="https://bhtherapygroup.com/wp-content/uploads/2024/04/Breathing-Techniques-scaled.jpeg" alt="Breathing Techniques" title="© Beverly Hills Therapy Group">
+          <div class="text-sm text-center text-indigo-900 mt-1">Breathing Techniques</div>
+        </div>
+        <div>
+          <img src="https://i.ytimg.com/vi/hJbRpHZr_d0/maxresdefault.jpg" alt="Yoga for Anxiety and Stress" title="© YouTube, Yoga With Adriene">
+          <div class="text-sm text-center text-indigo-900 mt-1">Yoga Practice</div>
+        </div>
+        <div>
+          <img src="https://yogaselection.com/wp-content/uploads/2023/06/yoga-for-stress-relief.jpg" alt="Yoga for Stress Relief" title="© Yoga Selection">
+          <div class="text-sm text-center text-indigo-900 mt-1">Yoga for Stress Relief</div>
+        </div>
+        <div>
+          <img src="https://www.verywellmind.com/thmb/nUKbCyiqBNUshQrYxMLyPlxPUtU=/2000x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-995468182-5c12fc3e46e0fb000108d8f4.jpg" alt="Journaling for Anxiety Relief" title="© Verywell Mind">
+          <div class="text-sm text-center text-indigo-900 mt-1">Journaling</div>
+        </div>
+        <div>
+          <img src="https://domf5oio6qrcr.cloudfront.net/medialibrary/2057/exercising-to-relax.jpg" alt="Exercising to Relax" title="© Harvard Health">
+          <div class="text-sm text-center text-indigo-900 mt-1">Exercise for Stress Relief</div>
+        </div>
+      </div>
+      
+    </section>
+    
+    <!-- INFORMATION BOXES -->
+    <section class="w-full max-laptop-w mx-auto px-2 flex flex-col gap-8 mb-10">
+      <div class="w-full flex flex-col lg:flex-row gap-8">
+        <!-- What is Stress Management -->
+        <div class="animated-box glass rounded-3xl p-7 flex-1 border border-blue-100 hover:border-purple-300 shadow-lg">
+          <h2 class="font-semibold text-xl text-indigo-600 mb-2 flex items-center gap-2">
+            <i class="fas fa-brain text-indigo-400 text-2xl"></i>
+            What is Stress Management?
+          </h2>
+          <img src="https://www.sunriserecoverycare.com/wp-content/uploads/2025/02/Meditation-for-Relaxation-6-Techniques-for-Stress-Relief.png" alt="Meditation for Relaxation" class="w-full rounded-xl mb-3" style="max-height:180px;object-fit:cover;">
+          <p class="text-gray-700 leading-relaxed">
+            Stress management encompasses techniques and practices designed to help individuals cope with stress, reduce its negative impacts, and improve overall wellbeing. It involves recognizing stress triggers, implementing healthy coping strategies, and cultivating resilience. Effective stress management helps prevent chronic stress, which can contribute to various health problems including anxiety, depression, digestive issues, heart disease, sleep problems, and cognitive impairment. By incorporating mindfulness, relaxation techniques, physical activity, and healthy lifestyle habits, individuals can better navigate life's challenges while maintaining mental and physical health.
+          </p>
+        </div>
+        <!-- Common Stressors -->
+        <div class="animated-box glass rounded-3xl p-7 flex-1 border border-purple-100 hover:border-blue-200 shadow-lg">
+          <h2 class="font-semibold text-xl text-blue-600 mb-2 flex items-center gap-2">
+            <i class="fas fa-exclamation-triangle text-purple-400 text-2xl"></i>
+            Common Stressors
+          </h2>
+          <img src="https://47946009.fs1.hubspotusercontent-na1.net/hubfs/47946009/AcentraHealth_December2024/images/Mental-Health_Deep-Breathing-768x994.png" alt="Deep Breathing" class="w-full rounded-xl mb-3" style="max-height:180px;object-fit:cover;">
+          <ul class="text-gray-700 pl-5 list-disc leading-relaxed space-y-1">
+            <li>Work pressure, deadlines, and challenging workplace dynamics</li>
+            <li>Financial concerns including debt, budgeting, and economic uncertainty</li>
+            <li>Relationship difficulties with partners, family members, or friends</li>
+            <li>Major life changes such as moving, marriage, divorce, or bereavement</li>
+            <li>Health concerns and chronic conditions</li>
+            <li>Information overload and constant digital connectivity</li>
+          </ul>
+        </div>
+      </div>
+      <div class="w-full flex flex-col lg:flex-row gap-8">
+        <!-- Key Strategies -->
+        <div class="animated-box rounded-3xl p-7 flex-1 bg-gradient-to-br from-indigo-200 via-purple-100 to-blue-100 border border-indigo-100 hover:border-purple-300 text-gray-800 shadow-lg">
+          <h2 class="font-semibold text-xl text-indigo-800 mb-2 flex items-center gap-2"><i class="fas fa-lightbulb text-yellow-400 text-2xl"></i> Key Stress Management Strategies</h2>
+          <ul class="pl-5 list-disc leading-relaxed text-gray-800 space-y-1">
+            <li><span class="font-semibold">Mindfulness meditation:</span> Focusing on the present moment without judgment.</li>
+            <li><span class="font-semibold">Deep breathing techniques:</span> Controlled breathing to activate relaxation response.</li>
+            <li><span class="font-semibold">Physical activity:</span> Regular exercise to reduce stress hormones and increase endorphins.</li>
+            <li><span class="font-semibold">Healthy lifestyle:</span> Balanced nutrition, adequate sleep, and limited caffeine/alcohol.</li>
+            <li><span class="font-semibold">Social connection:</span> Building and maintaining supportive relationships.</li>
+            <li><span class="font-semibold">Time management:</span> Setting priorities, boundaries, and realistic expectations.</li>
+          </ul>
+        </div>
+        <!-- Our Chatbot -->
+        <div class="animated-box glass rounded-3xl p-7 flex-1 border border-blue-100 hover:border-indigo-300 shadow-lg">
+          <h2 class="font-semibold text-xl text-indigo-600 mb-2 flex items-center gap-2"><i class="fas fa-robot text-indigo-400 text-2xl"></i> How Our Chatbot Helps</h2>
+          <p class="text-gray-700 leading-relaxed mb-1">
+            Our Stress Management Assistant chatbot serves as your digital wellness companion! It is available 24/7 to support, inform, and guide your mental wellness journey:
+          </p>
+          <ul class="pl-5 list-disc text-gray-700 mb-1 space-y-1">
+            <li>Provides guided breathing and quick relaxation exercises</li>
+            <li>Offers personalized stress management techniques based on your needs</li>
+            <li>Shares mindfulness prompts and meditation guidance</li>
+            <li>Suggests healthy coping strategies during difficult moments</li>
+            <li>Provides sleep tips and relaxation techniques for better rest</li>
+            <li>Guides you to credible mental wellness resources and professional help</li>
+          </ul>
+          <span class="block mt-2 text-purple-500 font-medium">Try chatting with us by tapping the <i class="far fa-comment-dots"></i> button below!</span>
+        </div>
+      </div>
+      <div class="w-full">
+        <!-- How to Practice Self-Care Box -->
+        <div class="animated-box glass rounded-3xl p-7 border border-purple-100 hover:border-purple-300 shadow-lg">
+          <h2 class="font-semibold text-xl text-purple-500 mb-2 flex items-center gap-2"><i class="fas fa-heart text-purple-300 text-2xl"></i> How You Can Practice Self-Care</h2>
+          <ul class="pl-5 list-disc text-gray-700 space-y-1">
+            <li>Start your day with a few minutes of mindfulness or gratitude practice</li>
+            <li>Schedule regular "me time" for activities that bring you joy</li>
+            <li>Set healthy boundaries in personal and professional relationships</li>
+            <li>Practice digital detox by disconnecting from devices for set periods</li>
+            <li>Get outdoors regularly - nature exposure reduces stress hormones</li>
+            <li>Keep a stress journal to identify patterns and develop coping strategies</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURED TECHNIQUES -->
+    <section class="w-full max-laptop-w mx-auto px-2 mb-10">
+      <h2 class="text-2xl font-bold text-purple-700 mb-4 flex items-center gap-2">
+        <i class="fas fa-spa text-indigo-500"></i>Featured Stress-Relief Techniques
+      </h2>
+      <div class="featured-techniques grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7">
+        <div class="bg-white rounded-2xl p-5 shadow flex flex-col items-center glass">
+          <img src="https://health.ucdavis.edu/media-resources/contenthub/post/internet/cultivating-health/2022/12/images-body/meditation-benefits.jpg" alt="Meditation">
+          <div class="mt-3 text-lg font-bold text-indigo-900">Meditation</div>
+          <div class="text-indigo-600 text-sm mb-1">Beginner-Friendly</div>
+          <div class="text-gray-700 text-sm text-center">Just 10 minutes daily can reduce anxiety. Focus on breath, allow thoughts to pass without judgment, and create a calm mental space.</div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 shadow flex flex-col items-center glass">
+          <img src="https://media.self.com/photos/62ec18605725f61f848ebf7c/4:3/w_2560%2Cc_limit/deep-breathing-exercises.jpg" alt="Deep Breathing">
+          <div class="mt-3 text-lg font-bold text-indigo-900">Deep Breathing</div>
+          <div class="text-indigo-600 text-sm mb-1">Instant Relief</div>
+          <div class="text-gray-700 text-sm text-center">4-7-8 breathing: Inhale for 4 counts, hold for 7, exhale for 8. Activates parasympathetic system to calm body and mind.</div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 shadow flex flex-col items-center glass">
+          <img src="https://www.verywellmind.com/thmb/nUKbCyiqBNUshQrYxMLyPlxPUtU=/2000x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-995468182-5c12fc3e46e0fb000108d8f4.jpg" alt="Journaling">
+          <div class="mt-3 text-lg font-bold text-indigo-900">Journaling</div>
+          <div class="text-indigo-600 text-sm mb-1">Emotional Release</div>
+          <div class="text-gray-700 text-sm text-center">Write freely for 10-15 minutes daily. Express thoughts without censoring to process emotions and gain perspective on stressors.</div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 shadow flex flex-col items-center glass">
+          <img src="https://domf5oio6qrcr.cloudfront.net/medialibrary/2057/exercising-to-relax.jpg" alt="Exercise">
+          <div class="mt-3 text-lg font-bold text-indigo-900">Exercise</div>
+          <div class="text-indigo-600 text-sm mb-1">Mood Booster</div>
+          <div class="text-gray-700 text-sm text-center">Even 20-30 minutes of movement reduces stress hormones and releases endorphins. Walking, swimming, or dancing are excellent options.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DEVELOPERS FOOTER & LINKS -->
+    <footer class="w-full max-laptop-w mx-auto py-7 mb-4 flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 via-indigo-100 to-purple-50 bg-opacity-75 rounded-xl border-t-2 border-purple-200/70">
+      <p class="text-sm text-gray-700 mb-3 font-semibold">Stress Management Assistant &copy; 2025 | Developed by Abhishek Das</p>
+      <div class="flex justify-center items-center gap-8 mb-2">
+        <img src="a1.jpg" class="w-12 h-13 rounded-full dev-avatar border-2 border-indigo-200 shadow-lg transition duration-300" title="Abhishek Das" />
+        </div>
+      <div class="flex gap-7">
+        <a href="https://github.com/abhishekdas2104" class="text-gray-600 hover:text-indigo-500 text-2xl transition"><i class="fab fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/abhishek-das-468b60289/" class="text-gray-600 hover:text-blue-500 text-2xl transition"><i class="fab fa-linkedin"></i></a>
+        <a href="#" class="text-gray-600 hover:text-purple-400 text-2xl transition"><i class="fas fa-envelope"></i></a>
+      </div>
+    </footer>
+  </main>
+  
+  <!-- CHATBOT FAB BUTTON -->
+  <button id="chatbotFAB" type="button"
+    class="chatbot-fab fixed bottom-9 right-10 z-60 bg-gradient-to-br from-indigo-400 to-purple-400 text-white w-16 h-16 rounded-full flex items-center justify-center text-3xl transition duration-300 hover:scale-110 focus:outline-none"
+    aria-label="Open chatbot">
+      <i class="far fa-comment-dots"></i>
+  </button>
+
+  <!-- CHATBOT CONTAINER (POPS UP) -->
+  <div class="chatbot-container" id="chatbotMain">
+    <div class="flex flex-col h-full">
+      <!-- Chatbot Header -->
+      <div class="flex items-center justify-between bg-gradient-to-r from-indigo-400 via-purple-300 to-blue-400 py-4 px-6 border-b-2 border-purple-200">
+        <div class="flex items-center gap-2">
+          <i class="fas fa-brain text-indigo-800 text-2xl"></i>
+          <span class="font-bold text-gray-900 text-lg">Stress Management Assistant</span>
+        </div>
+        <button id="chatbotClose" class="text-gray-600 hover:text-red-400 text-xl focus:outline-none"><i class="fas fa-times"></i></button>
+      </div>
+      <!-- Status -->
+      <div class="flex items-center gap-2 pl-6 pt-1 pb-1 text-indigo-700 text-sm">
+        <span class="h-2 w-2 inline-block rounded-full bg-indigo-400 animate-pulse"></span>
+        <span>Online</span>
+      </div>
+      <!-- Messages -->
+      <div id="chatbotMessages" class="flex-1 overflow-y-auto p-6 space-y-4 remove-scroll bg-gradient-to-br from-indigo-50 via-purple-100 to-blue-50">
+        <div class="flex items-start gap-2">
+          <div class="bg-gradient-to-br from-indigo-200 via-purple-100 to-blue-100 p-3 rounded-xl shadow text-gray-700 max-w-xl">
+            Hello! I'm your Stress Management Assistant. How are you feeling today? I can help with relaxation techniques, coping strategies, or just provide a space to express your thoughts.
+          </div>
+        </div>
+      </div>
+      <!-- Input -->
+      <form id="chatbotInputForm" autocomplete="off" class="bg-white/90 border-t px-4 py-3 flex gap-2 items-center">
+        <input id="chatbotUserInput" class="flex-1 px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium border border-gray-300 focus:ring-2 focus:ring-purple-300 no-resize outline-none transition" type="text" maxlength="300" placeholder="Type your message..." />
+        <button type="submit" class="px-5 py-2 rounded-lg bg-gradient-to-br from-indigo-400 to-purple-400 text-white text-lg font-bold shadow hover:from-indigo-500 hover:to-purple-600 transition"><i class="fas fa-paper-plane"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+
+  <script src="script.js"></script>
+  
+</body>
+</html>
